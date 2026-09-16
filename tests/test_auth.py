@@ -33,8 +33,12 @@ class AuthHarness(unittest.TestCase):
         self._tmp.cleanup()
 
     def run_auth_capture(self, args):
+        from unittest import mock
         buf = io.StringIO()
-        with redirect_stdout(buf):
+        # force the "modern terminal" path: identical glyphs on every OS
+        # (the ASCII fallback path is covered in test_windows_console.py)
+        with mock.patch("orca.winconsole.ascii_only", return_value=False), \
+                redirect_stdout(buf):
             code = run_auth(args)
         return code, buf.getvalue()
 

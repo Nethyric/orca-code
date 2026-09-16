@@ -112,8 +112,13 @@ class TestMarkdownExtras(unittest.TestCase):
     def _capture(self, text):
         import io
         import contextlib
+        from unittest import mock
         buf = io.StringIO()
-        with contextlib.redirect_stdout(buf):
+        # force the "modern terminal" path so glyph assertions are
+        # identical on every OS and console (fallback covered in
+        # test_windows_console.py)
+        with mock.patch("orca.winconsole.ascii_only", return_value=False), \
+                contextlib.redirect_stdout(buf):
             UI(interactive=False, theme="dark").markdown(text)
         return buf.getvalue()
 

@@ -50,9 +50,10 @@ class TestEncodingGate(unittest.TestCase):
             self.assertFalse(_encoding_ok())
 
     def test_windows_terminal_allows_fancy_glyphs(self):
+        buf = io.StringIO()  # utf-8-capable stream, like a real WT session
         with mock.patch.dict(winconsole._CAPS,
                              {"windows": True, "vt": True, "utf8": True,
-                              "modern": True}):
+                              "modern": True}), redirect_stdout(buf):
             self.assertTrue(_encoding_ok())
 
     def test_glyph_falls_back_on_legacy_cmd(self):
@@ -61,9 +62,10 @@ class TestEncodingGate(unittest.TestCase):
                               "modern": False}):
             self.assertEqual(glyph("🐋"), "<O>")
             self.assertEqual(glyph("⏺"), "*")
+        buf = io.StringIO()
         with mock.patch.dict(winconsole._CAPS,
                              {"windows": True, "vt": True, "utf8": True,
-                              "modern": True}):
+                              "modern": True}), redirect_stdout(buf):
             self.assertEqual(glyph("🐋"), "🐋")
 
 
