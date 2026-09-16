@@ -58,8 +58,9 @@ irm https://raw.githubusercontent.com/Nethyric/orca-code/main/install.ps1 | iex
 No git required — both installers pull the repo zip directly.
 
 **No Python at all?** Each [release](https://github.com/Nethyric/orca-code/releases)
-ships standalone executables for Linux, macOS, and Windows (x64 + ARM64),
-plus `orca.pyz` (one file, runs anywhere Python 3.9+ is installed).
+ships standalone executables for Linux and Windows (x64 + ARM64) and macOS
+(Apple Silicon), plus `orca.pyz` (one file, runs anywhere Python 3.9+
+is installed).
 
 Alternative methods (pip, pipx, venv, offline, from source):
 

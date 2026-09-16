@@ -4,12 +4,15 @@
 | --- | --- |
 | `orca-linux-x64.tar.gz` | Linux x86-64 |
 | `orca-linux-arm64.tar.gz` | Linux ARM64 |
-| `orca-macos-x64.tar.gz` | macOS Intel |
 | `orca-macos-arm64.tar.gz` | macOS Apple Silicon |
 | `orca-windows-x64.exe` | Windows x86-64 |
 | `orca-windows-arm64.exe` | Windows ARM64 |
 | `orca.pyz` | any OS with Python 3.9+ (single file, zero install) |
+
 | `*_py3-none-any.whl` | install via `pip` / `pipx` |
+
+Intel Macs: no prebuilt binary (hosted Intel macOS runners are retired) —
+use `pip install` or `orca.pyz`, both fully supported.
 
 Quick start (Linux, x64):
 

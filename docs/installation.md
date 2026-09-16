@@ -36,7 +36,6 @@ runtime and Orca in one file. Download from the
 | --- | --- |
 | `orca-linux-x64.tar.gz` | Linux x86-64 |
 | `orca-linux-arm64.tar.gz` | Linux ARM64 |
-| `orca-macos-x64.tar.gz` | macOS Intel |
 | `orca-macos-arm64.tar.gz` | macOS Apple Silicon |
 | `orca-windows-x64.exe` | Windows x86-64 (direct download, no unzip) |
 | `orca-windows-arm64.exe` | Windows ARM64 |
@@ -52,6 +51,9 @@ orca --version
 
 (adjust the filename for your platform — on Apple Silicon use
 `orca-macos-arm64.tar.gz`)
+
+Intel Macs: no prebuilt binary — hosted Intel macOS runners no longer
+exist. Use `pip install` or `orca.pyz` (both fully supported).
 
 macOS quarantines unsigned binaries; clear it once:
 
