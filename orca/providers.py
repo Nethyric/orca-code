@@ -194,6 +194,17 @@ class BaseProvider:
         raise NotImplementedError
 
 
+# some models sprinkle literal protocol tags into their reasoning stream
+_TAG_NOISE = ("<think>", "</think>", "<minimax:tool_call>", "</minimax:tool_call>")
+
+
+def _strip_tag_noise(text: str) -> str:
+    for tag in _TAG_NOISE:
+        if tag in text:
+            text = text.replace(tag, "")
+    return text
+
+
 class _ThinkSplitter:
     """Routes inline markup in streamed content to the right lane.
 
@@ -356,7 +367,7 @@ class OpenAICompatProvider(BaseProvider):
                 for rkey in ("reasoning_content", "reasoning"):
                     thought = delta.get(rkey)
                     if thought:
-                        yield ("reasoning", thought)
+                        yield ("reasoning", _strip_tag_noise(thought))
                 piece = delta.get("content")
                 if piece:
                     for kind, chunk_out in splitter.feed(piece):

@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/Nethyric/orca-code/actions/workflows/ci.yml"><img src="https://github.com/Nethyric/orca-code/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9%2B-38d9f0" alt="Python 3.9+"></a>
-  <img src="https://img.shields.io/badge/tests-168%20green-22c55e" alt="168 tests">
+  <img src="https://img.shields.io/badge/tests-169%20green-22c55e" alt="169 tests">
   <img src="https://img.shields.io/badge/dependencies-0-8b5cf6" alt="Zero dependencies">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
   <img src="https://img.shields.io/badge/version-0.0.1-0e4c6b" alt="v0.0.1">
@@ -98,7 +98,7 @@ orca -p "add dark mode to the site" --allow-write
 - **Thinking streams** — reasoning is shown live (dim, italic) but never stored,
   so context stays clean.
 - **Local-first** — Ollama and LM Studio need no account, no key, no internet.
-- **168 offline tests** — CI matrix on Python 3.9–3.13, no network, no keys.
+- **169 offline tests** — CI matrix on Python 3.9–3.13, no network, no keys.
 
 ## Documentation
 

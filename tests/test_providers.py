@@ -467,3 +467,19 @@ class TestThinkSplitter(unittest.TestCase):
         out = self._run(["ok<mini", "max:tool_call>hidden",
                          "</minimax:tool_", "call>end"])
         self.assertEqual("".join(v for k, v in out if k == "text"), "okend")
+
+    def test_reasoning_deltas_strip_tag_noise(self):
+        conf = {"name": "x", "kind": "openai", "base_url": "http://x",
+                "api_key": "k"}
+        sse = [
+            '{"choices":[{"delta":{"reasoning_content":"<think>step one\\n"}}]}',
+            '{"choices":[{"delta":{"reasoning_content":"step two</think>"}}]}',
+            '{"choices":[{"delta":{"content":"Answer."}}]}',
+        ]
+        tr = FakeTransport([sse])
+        p = OpenAICompatProvider(conf, "m", transport=tr)
+        events = [e for e in p.stream("s", [{"role": "user", "content": [
+            {"type": "text", "text": "q"}]}])]
+        reasoning = "".join(v for k, v in events if k == "reasoning")
+        self.assertEqual(reasoning, "step one\nstep two")
+        self.assertNotIn("<think>", reasoning)
