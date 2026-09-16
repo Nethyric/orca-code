@@ -66,6 +66,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[List[str]] = None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
+    # Windows consoles default to legacy code pages (cp1252) that can't encode
+    # the UI's glyphs (←, ✓, ⌁, ⋯). Switch to UTF-8 with replacement so output
+    # degrades gracefully instead of crashing with UnicodeEncodeError.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass  # non-tty/captured stream without reconfigure()
     parser = build_parser()
     args = parser.parse_args(argv)
 
