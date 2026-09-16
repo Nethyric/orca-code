@@ -129,7 +129,7 @@ def build() -> str:
     <div style="{mono};color:#e9dfd2;">
       <div><span style="color:#5fd7ff;">⏺ dark</span>   <span style="color:#94a3ad;">⎿ Deep Ocean — glacier ice, the default</span></div>
       <div><span style="color:#0e7490;">⏺ light</span>  <span style="color:#6e767d;">⎿ Arctic Day, for paper-white terminals</span></div>
-      <div><span style="color:#d97757;">⏺ coral</span>  <span style="color:#6e767d;">⎿ warm, for émigrés from Claude Code</span></div>
+      <div><span style="color:#d97757;">⏺ coral</span>  <span style="color:#6e767d;">⎿ warm, low-glare accents</span></div>
       <div><span style="color:#e5c07b;">⏺ ansi</span>   <span style="color:#6e767d;">⎿ zero hardcoded color — your 16 colors</span></div>
       <div><span style="color:#8b8177;">⏺ mono</span>   <span style="color:#6e767d;">⎿ glyphs without color</span></div>
     </div>""")
@@ -158,7 +158,7 @@ def build() -> str:
       <div><span style="color:#56b6c2;">✽</span> Hunting… <span style="color:#94a3ad;">(9.6s)</span></div>
     </div>""")
 
-    todo_card = card("Claude-Code-style todos, strike-through on done", f"""
+    todo_card = card("Compact todos, strike-through on done", f"""
     <div style="{mono};color:#e9dfd2;">
       <div><span style="font-weight:700;">⏺ Update Todos</span></div>
       <div>  <span style="color:#94a3ad;">⎿</span> <span style="color:#98c379;">☒</span> <span style="color:#8b8177;text-decoration:line-through;">Read calc.py and find the bug</span></div>
@@ -187,7 +187,7 @@ def build() -> str:
 
   <div style="text-align:center;margin-bottom:34px;">
     <div style="font:700 15px/1 ui-monospace,Menlo,monospace;letter-spacing:.3em;text-transform:uppercase;color:#5fd7ff;margin-bottom:14px;">🐋 orca code v0.0.1</div>
-    <div style="font:800 clamp(26px,5vw,40px)/1.15 system-ui,-apple-system,'Segoe UI',sans-serif;color:#f2e9dc;max-width:720px;margin:0 auto 12px;">Deep Ocean. Its own look, not a Claude Code skin.</div>
+    <div style="font:800 clamp(26px,5vw,40px)/1.15 system-ui,-apple-system,'Segoe UI',sans-serif;color:#f2e9dc;max-width:720px;margin:0 auto 12px;">Deep Ocean. A look that belongs to Orca alone.</div>
     <div style="font:15px/1.6 system-ui,sans-serif;color:#a08e7c;max-width:620px;margin:0 auto;">Glacier-ice on dark water — the orca's own palette. Wave meters, syntax-highlighted everything, diff-review dialogs, five themes (one finally respects your terminal's own palette) — all pure ANSI, zero dependencies, Python stdlib only.</div>
   </div>
 

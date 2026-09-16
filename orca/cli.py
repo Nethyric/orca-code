@@ -333,9 +333,9 @@ def run_init(root: Optional[str]) -> int:
 def run_auth(args: argparse.Namespace) -> int:
     """`orca auth login|logout|list` — provider key management.
 
-    Like `opencode auth login`, but the key is validated live against the
-    provider's own /models endpoint before it's stored, and you're offered
-    the provider's real catalog when picking a default model.
+    Keys are validated live against the provider's own /models endpoint
+    before they're stored, and the provider's real catalog is offered when
+    picking a default model.
     """
     cfg = Config()
     cmd = args.auth_cmd

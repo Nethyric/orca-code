@@ -1,8 +1,8 @@
 """The Orca Code tool system — the model's hands and eyes.
 
-Mirrors the classic Claude Code tool surface (read/write/edit/bash/grep/
-glob/ls/todo) and adds an undo safety net: every write/edit is snapshotted
-so `/undo` can revert the agent's last changes.
+Standard terminal-agent tool surface (read/write/edit/bash/grep/glob/ls/
+todo) with an undo safety net: every write/edit is snapshotted so `/undo`
+can revert the agent's last changes.
 """
 from __future__ import annotations
 

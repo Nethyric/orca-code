@@ -138,5 +138,5 @@ happened. Disable with `--no-auto-compact` or `"auto_compact": false`.
 ## Project memory: ORCA.md
 
 `orca init` creates an `ORCA.md` at the project root — conventions, commands,
-gotchas — which is injected into every session in that project. Like
-CLAUDE.md, but provider-neutral. `/memory` shows what's loaded.
+gotchas — which is injected into every session in that project. Fully
+provider-neutral. `/memory` shows what's loaded.

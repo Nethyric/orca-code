@@ -40,23 +40,29 @@
 
 Orca Code is an agentic coding tool that lives in your terminal: it reads and edits
 files, runs commands, searches the web, checks its own work, and finishes
-multi-file builds end-to-end. It is a from-scratch, **stdlib-only Python**
-alternative to Claude Code — built around the three things closed agents get
-wrong: **provider freedom, cost transparency, and doing what you asked.**
+multi-file builds end-to-end. It's built from scratch on **pure Python stdlib**
+around three principles: **your providers, your budget, your terminal.**
 
 ## Installation
 
 ```bash
-# one-liner (macOS / Linux)
+# macOS / Linux (any POSIX shell)
 curl -fsSL https://raw.githubusercontent.com/Nethyric/orca-code/main/install.sh | bash
-
-# or with pip / pipx
-pip install git+https://github.com/Nethyric/orca-code
-pipx install git+https://github.com/Nethyric/orca-code
 ```
 
-> Windows, offline, from-source, and local-Ollama setups: see the
-> **[full installation guide](docs/installation.md)**.
+```powershell
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/Nethyric/orca-code/main/install.ps1 | iex
+```
+
+No git required — both installers pull the repo zip directly. Alternative
+methods (pip, pipx, venv, offline, from source):
+
+```bash
+pip install https://github.com/Nethyric/orca-code/archive/refs/heads/main.zip
+```
+
+> The full walkthrough lives in the **[installation guide](docs/installation.md)**.
 
 ## Get started
 

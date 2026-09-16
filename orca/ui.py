@@ -3,11 +3,11 @@
 Zero dependencies: everything degrades gracefully on dumb terminals and
 Windows (VT sequences enabled at init; ASCII fallbacks for exotic glyphs).
 
-Theme system (the thing Claude Code gets flack for — it hardcodes 24-bit
-RGB and ignores your terminal palette, GH issue #34702):
+Theme system (uses your terminal palette where possible; never assumes
+24-bit truecolor is available):
     dark   — Deep Ocean: glacier-ice on dark water (Orca's signature)
     light  — Arctic Day: tuned for light backgrounds
-    coral  — warm accents for those coming from Claude Code
+    coral  — warm accents (soft contrast, low-glare)
     ansi   — pure 16-color: your terminal theme decides every color
     mono   — no color at all, glyphs preserved
 Pick with `orca config`, `/theme <name>`, or ORCA_THEME. Force color for
@@ -29,8 +29,7 @@ from typing import Iterator, List, Optional, Sequence
 # truecolor rgb, 256-color fallback, 16-color fallback
 #
 # Signature identity — "Deep Ocean": the orca's own world. Cold arctic
-# water, glacier ice, seafoam. Claude Code owns warm coral; Orca is the
-# apex predator of the deep: precise, cold, fast.
+# water, glacier ice, seafoam. Precise, cold, fast.
 _PALETTE = {
     "dark": {                                    # Deep Ocean — the default
         "brand": ("95;215;255", "81", "6"),      # glacier ice
@@ -42,7 +41,7 @@ _PALETTE = {
         "teal": ("16;122;101", "30", "6"),
         "gray": ("110;118;125", "242", "8"),
     },
-    "coral": {                                   # warm, for CC émigrés
+    "coral": {                                   # warm, low-glare accents
         "brand": ("217;119;87", "173", "3"),
         "teal": ("125;211;192", "80", "6"),
         "gray": ("148;156;163", "245", "8"),
@@ -749,7 +748,7 @@ class UI:
         self.p()
 
     def todos(self, items: List[dict]) -> None:
-        """Claude-Code-style compact todo list."""
+        """Compact todo list with strike-through on done items."""
         self.end_stream()
         if not items:
             return

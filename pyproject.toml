@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "orca-code"
 version = "0.0.1"
-description = "🐋 Orca Code — the apex predator of terminal coding agents. Zero-dependency, provider-agnostic alternative to Claude Code."
+description = "🐋 Orca Code — the apex predator of terminal coding agents. Zero-dependency, provider-agnostic, pure Python stdlib."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Orca Code contributors" }]
-keywords = ["ai", "agent", "cli", "coding", "llm", "claude", "copilot", "terminal"]
+keywords = ["ai", "agent", "cli", "coding", "llm", "terminal", "developer-tools"]
 classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",

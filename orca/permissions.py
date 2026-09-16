@@ -104,7 +104,7 @@ class Permissions:
         if rule not in self.allow:
             self.allow.append(rule)
 
-    # Claude-Code-style short names are accepted as aliases
+    # short names are accepted as aliases
     _ALIASES = {"edit": "edit_file", "write": "write_file", "read": "read_file",
                 "webfetch": "web_fetch", "websearch": "web_search", "glob": "glob",
                 "grep": "grep", "ls": "ls", "todo": "todo"}

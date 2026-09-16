@@ -152,8 +152,8 @@ not a static list that ages badly.
 
 ## Reasoning models
 
-Models that expose reasoning (DeepSeek-R, Kimi, GLM, gpt-oss, Claude with
-extended thinking) stream their thinking as a dim, italic `⌁ thinking` lane
+Models that expose reasoning (DeepSeek-R, Kimi, GLM, gpt-oss and other
+reasoning-tuned models) stream their thinking as a dim, italic `⌁ thinking` lane
 while they work. Reasoning is **displayed but never stored** — it doesn't eat
 your context window on later turns.
 

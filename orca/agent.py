@@ -4,8 +4,8 @@ Receives a user prompt → streams a model response → collects tool calls →
 asks permissions → executes tools → appends results → loops until the model
 stops calling tools (or hits the turn guard / cost cap / an interrupt).
 
-This mirrors Claude Code's query loop and adds: live context metering,
-calibrated auto-compaction, an undo-safety net and a hard cost cap.
+Beyond the basic loop: live context metering, calibrated auto-compaction,
+an undo-safety net and a hard cost cap.
 """
 from __future__ import annotations
 

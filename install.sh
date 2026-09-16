@@ -4,6 +4,7 @@
 set -euo pipefail
 
 REPO="https://github.com/Nethyric/orca-code"
+ZIP="$REPO/archive/refs/heads/main.zip"   # install source: no git needed
 say() { printf '\033[38;5;81m🐋 %s\033[0m\n' "$*"; }
 err() { printf '\033[31m✗ %s\033[0m\n' "$*" >&2; }
 
@@ -25,12 +26,12 @@ say "using $PY ($($PY --version 2>&1))"
 # ── 2. pick an install strategy for this platform ────────────────────────
 if command -v pipx >/dev/null 2>&1; then
   say "installing with pipx (isolated)"
-  pipx install "git+$REPO"
-elif ! $PY -m pip install "git+$REPO" 2>/dev/null; then
+  pipx install "$ZIP"
+elif ! $PY -m pip install "$ZIP" 2>/dev/null; then
   # externally-managed environment (PEP 668): Ubuntu 23.04+/Debian 12+/Fedora 38+
   say "system Python is externally managed — installing to --user"
-  $PY -m pip install --user "git+$REPO" 2>/dev/null || \
-    $PY -m pip install --break-system-packages "git+$REPO"
+  $PY -m pip install --user "$ZIP" 2>/dev/null || \
+    $PY -m pip install --break-system-packages "$ZIP"
 fi
 
 # ── 3. make sure it's on PATH ────────────────────────────────────────────

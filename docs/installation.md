@@ -4,7 +4,7 @@ Orca Code is a single Python package with **zero runtime dependencies**. If you
 have Python 3.9 or newer, you already have everything you need.
 
 - [Requirements](#requirements)
-- [One-liner (macOS / Linux)](#one-liner-macos--linux)
+- [One-liner (macOS / Linux / Windows)](#one-liner-macos--linux--windows)
 - [pip](#pip)
 - [pipx (recommended for CLI tools)](#pipx-recommended-for-cli-tools)
 - [From source](#from-source)
@@ -25,16 +25,25 @@ have Python 3.9 or newer, you already have everything you need.
 | Dependencies | **None** — pure standard library |
 | API key | Only for cloud providers. Ollama / LM Studio need nothing. |
 
-## One-liner (macOS / Linux)
+## One-liner (macOS / Linux / Windows)
+
+macOS / Linux (any POSIX shell):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Nethyric/orca-code/main/install.sh | bash
 ```
 
-The script checks your Python version and installs Orca with pip (into
-`~/.local` if your system Python is externally managed, e.g. Ubuntu 23.04+ /
-Debian 12+ / Fedora 38+). Read it before running, as you should with any
-`curl | bash`:
+Windows (PowerShell — press Start, type "powershell", Enter):
+
+```powershell
+irm https://raw.githubusercontent.com/Nethyric/orca-code/main/install.ps1 | iex
+```
+
+Both scripts check your Python version and install Orca from the repo zip —
+**no git required**. The bash script falls back to `--user` /
+`--break-system-packages` on externally-managed systems (Ubuntu 23.04+ /
+Debian 12+ / Fedora 38+). Read before running, as you should with any
+installer you pipe into a shell:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Nethyric/orca-code/main/install.sh
@@ -43,7 +52,10 @@ curl -fsSL https://raw.githubusercontent.com/Nethyric/orca-code/main/install.sh
 ## pip
 
 ```bash
-# system-wide (fine on macOS with python.org builds)
+# from the repo zip — no git needed
+python3 -m pip install https://github.com/Nethyric/orca-code/archive/refs/heads/main.zip
+
+# or straight from git if you have it installed
 python3 -m pip install git+https://github.com/Nethyric/orca-code
 ```
 
@@ -52,11 +64,13 @@ use one of these instead:
 
 ```bash
 # into your user site (no venv needed)
-python3 -m pip install --user git+https://github.com/Nethyric/orca-code
+python3 -m pip install --user ZIP_URL          # see ZIP_URL below
 
 # or bypass the guard if you know why it exists
-python3 -m pip install --break-system-packages git+https://github.com/Nethyric/orca-code
+python3 -m pip install --break-system-packages ZIP_URL
 ```
+
+where `ZIP_URL` is `https://github.com/Nethyric/orca-code/archive/refs/heads/main.zip`.
 
 Make sure `~/.local/bin` (or its Windows equivalent) is on your `PATH`:
 
@@ -74,7 +88,7 @@ dependencies, the venv is just Orca itself.
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 
-pipx install git+https://github.com/Nethyric/orca-code
+pipx install ZIP_URL
 ```
 
 ## From source
@@ -99,15 +113,24 @@ repo root.
 
 ## Windows
 
-**Option A — WSL (recommended):** the Deep Ocean UI is tuned for ANSI-capable
-terminals. In WSL, follow the macOS/Linux steps above.
-
-**Option B — native:** with Python from python.org:
+**Option A — PowerShell one-liner (native, easiest):**
 
 ```powershell
-py -m pip install git+https://github.com/Nethyric/orca-code
-orca --version
+irm https://raw.githubusercontent.com/Nethyric/orca-code/main/install.ps1 | iex
 ```
+
+The script finds Python (via the `py` launcher or `python`), verifies it's
+3.9+, installs from the repo zip, and checks that `orca --version` works.
+
+**Option B — manual, native:** with Python from python.org:
+
+```powershell
+py -m pip install https://github.com/Nethyric/orca-code/archive/refs/heads/main.zip
+py -m orca --version
+```
+
+**Option C — WSL:** the Deep Ocean UI is tuned for ANSI-capable terminals.
+In WSL, follow the macOS/Linux steps above.
 
 Use Windows Terminal (not legacy `cmd.exe`) for full color and box-drawing
 support. If glyphs look wrong, run `orca config` and pick the `plain` theme.
