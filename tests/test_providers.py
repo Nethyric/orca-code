@@ -389,3 +389,81 @@ class TestProviderCoverage(unittest.TestCase):
 
     def test_at_least_30_providers(self):
         self.assertGreaterEqual(len(PROVIDER_PRESETS), 30)
+
+
+class TestThinkSplitter(unittest.TestCase):
+    """Inline <think>...</think> reasoning routed to the reasoning lane."""
+
+    def _run(self, chunks):
+        from orca.providers import _ThinkSplitter
+        sp = _ThinkSplitter()
+        out = []
+        for c in chunks:
+            out.extend(sp.feed(c))
+        out.extend(sp.flush())
+        return out
+
+    def test_no_tags_passthrough(self):
+        out = self._run(["just ", "normal text"])
+        self.assertEqual(out, [("text", "just "), ("text", "normal text")])
+
+    def test_think_block_routed_to_reasoning(self):
+        out = self._run(["<think>plan it</think>OK"])
+        self.assertEqual(out, [("reasoning", "plan it"), ("text", "OK")])
+
+    def test_tag_split_across_chunks(self):
+        out = self._run(["<thi", "nk>abc</th", "ink>done"])
+        self.assertEqual(out, [("reasoning", "abc"), ("text", "done")])
+
+    def test_multiple_think_blocks(self):
+        out = self._run(["<think>a</think>1<think>b</think>2"])
+        self.assertEqual(out, [("reasoning", "a"), ("text", "1"),
+                               ("reasoning", "b"), ("text", "2")])
+
+    def test_unterminated_think_is_reasoning(self):
+        out = self._run(["<think>half way"])
+        self.assertEqual(out, [("reasoning", "half way")])
+
+    def test_literal_partial_tail_flushed_as_text(self):
+        # "<thi" that never completes is plain text, not lost
+        out = self._run(["wait <thi"])
+        self.assertEqual(out, [("text", "wait "), ("text", "<thi")])
+
+    def test_stream_end_to_end_think_stripped_from_message(self):
+        conf = {"name": "x", "kind": "openai", "base_url": "http://x",
+                "api_key": "k"}
+        sse = [
+            '{"choices":[{"delta":{"content":"<think>reason here</t"}}]}',
+            '{"choices":[{"delta":{"content":"hink>\\nAnswer: 42"}}]}',
+        ]
+        tr = FakeTransport([sse])
+        p = OpenAICompatProvider(conf, "m", transport=tr)
+        events = []
+        msg = None
+        for kind, payload in p.stream("sys", [{"role": "user", "content": [
+                {"type": "text", "text": "q"}]}]):
+            events.append((kind, payload))
+            if kind == "message":
+                msg = payload
+        self.assertIn(("text", "\nAnswer: 42"), events)
+        self.assertIn(("reasoning", "reason here"), events)
+        stored = "".join(b.get("text", "") for b in msg["content"])
+        self.assertEqual(stored.strip(), "Answer: 42")
+        self.assertNotIn("think", stored)
+
+    def test_minimax_tool_call_block_dropped(self):
+        out = self._run(["before", "<minimax:tool_call>{\"name\":\"x\"}",
+                         "</minimax:tool_call>", "after"])
+        self.assertEqual([k for k, _ in out], ["text", "text"])
+        self.assertEqual("".join(v for _, v in out), "beforeafter")
+
+    def test_orphan_close_tag_stripped(self):
+        out = self._run(["4</minimax:tool_call>"])
+        self.assertEqual(out, [("text", "4")])
+        out = self._run(["done</think>"])
+        self.assertEqual(out, [("text", "done")])
+
+    def test_mm_tag_split_across_chunks(self):
+        out = self._run(["ok<mini", "max:tool_call>hidden",
+                         "</minimax:tool_", "call>end"])
+        self.assertEqual("".join(v for k, v in out if k == "text"), "okend")

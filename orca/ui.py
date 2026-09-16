@@ -71,7 +71,7 @@ _RESET = "\x1b[0m"
 def _encoding_ok() -> bool:
     try:
         enc = sys.stdout.encoding or "utf-8"
-        "⏺⎿•⋯❯🐋☒◐☐✢↻".encode(enc)
+        "◆↳•⋯❯🐋☒◐☐✢↻".encode(enc)
     except (UnicodeEncodeError, LookupError):
         return False
     # legacy Windows consoles (plain cmd.exe/conhost) get the ASCII set:
@@ -98,7 +98,7 @@ def safe(text: str) -> str:
 
 # Fallbacks for terminals that cannot print the fancy glyphs.
 _FALLBACK = {
-    "⏺": "*", "⎿": "`", "•": "-", "⋯": "...", "❯": ">", "🐋": "<O>",
+    "◆": "*", "↳": ">", "•": "-", "⋯": "...", "❯": ">", "🐋": "<O>",
     "✔": "v", "✗": "x", "⚠": "!", "◐": "o", "█": "#", "░": ".",
     "╭": "+", "╮": "+", "╰": "+", "╯": "+", "─": "-", "│": "|",
     "┌": "+", "┐": "+", "└": "+", "┘": "+", "├": "+", "┤": "+",
@@ -358,14 +358,14 @@ class UI:
 
     def tool_start(self, name: str, detail: str) -> None:
         self.end_stream()
-        line = f"{self.paint(self.sym('⏺'), 'brand')} {self.paint(name, 'bold')}"
+        line = f"{self.paint(self.sym('◆'), 'brand')} {self.paint(name, 'bold')}"
         if detail:
             line += self.paint(f"({self._short(detail)})", "gray")
         self.p(line)
 
     def tool_done(self, summary: str, is_error: bool = False) -> None:
         style = ["gray"] if not is_error else ["red"]
-        mark = self.paint(self.sym("⎿"), *style)
+        mark = self.paint(self.sym("↳"), *style)
         first, *rest = summary.splitlines() or [""]
         self.p(f"  {mark} {first}", style=style)
         for line in rest[:4]:
@@ -380,7 +380,7 @@ class UI:
             self.tool_done("(empty file)")
             return
         lang = path.rsplit(".", 1)[-1] if "." in path else ""
-        mark = self.paint(self.sym("⎿"), "gray")
+        mark = self.paint(self.sym("↳"), "gray")
         gutter = self.paint(self.sym("│"), "gray")
         shown = lines[:max_lines]
         for raw in shown:
@@ -681,7 +681,7 @@ class UI:
                           diff: Optional[str] = None) -> str:
         self.p()
         label = pattern or tool
-        self.p(f"  {self.sym('⏺')} Orca wants to use {self.paint(tool, 'bold')}:")
+        self.p(f"  {self.sym('◆')} Orca wants to use {self.paint(tool, 'bold')}:")
         for line in detail.splitlines()[:12]:
             self.p(f"    {self.paint(self.sym('│'), 'yellow')} {line}")
         if diff:
@@ -770,7 +770,7 @@ class UI:
         self.end_stream()
         if not items:
             return
-        self.p(f"  {self.paint(self.sym('⏺'), 'bold')} {self.paint('Update Todos', 'bold')}")
+        self.p(f"  {self.paint(self.sym('◆'), 'bold')} {self.paint('Update Todos', 'bold')}")
         for item in items:
             status = item.get("status", "pending")
             if status == "completed":
@@ -782,7 +782,7 @@ class UI:
             else:
                 mark = self.paint(self.sym("☐"), "gray")
                 text = item.get("content", "")
-            self.p(f"    {self.paint(self.sym('⎿'), 'gray')} {mark} {text}")
+            self.p(f"    {self.paint(self.sym('↳'), 'gray')} {mark} {text}")
         self.p()
 
 

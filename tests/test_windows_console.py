@@ -61,7 +61,7 @@ class TestEncodingGate(unittest.TestCase):
                              {"windows": True, "vt": True, "utf8": True,
                               "modern": False}):
             self.assertEqual(glyph("🐋"), "<O>")
-            self.assertEqual(glyph("⏺"), "*")
+            self.assertEqual(glyph("◆"), "*")
         buf = io.StringIO()
         with mock.patch.dict(winconsole._CAPS,
                              {"windows": True, "vt": True, "utf8": True,
@@ -87,7 +87,7 @@ class TestUIConsoleBehavior(unittest.TestCase):
                             "modern": False})
         self.assertFalse(ui.color)   # no raw ESC garbage in old consoles
         self.assertFalse(ui.fancy)   # ASCII glyph set
-        self.assertEqual(ui.sym("⏺"), "*")
+        self.assertEqual(ui.sym("◆"), "*")
 
     def test_color_on_when_vt_available(self):
         ui = self._make_ui({"windows": True, "vt": True, "utf8": True,
@@ -101,7 +101,7 @@ class TestUIConsoleBehavior(unittest.TestCase):
                             "modern": True})
         self.assertTrue(ui.color)
         self.assertTrue(ui.fancy)
-        self.assertEqual(ui.sym("⏺"), "⏺")
+        self.assertEqual(ui.sym("◆"), "◆")
 
 
 if __name__ == "__main__":

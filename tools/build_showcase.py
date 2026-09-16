@@ -127,11 +127,11 @@ def build() -> str:
 
     themes_card = card("5 themes · deep ocean is the signature", f"""
     <div style="{mono};color:#e9dfd2;">
-      <div><span style="color:#5fd7ff;">⏺ dark</span>   <span style="color:#94a3ad;">⎿ Deep Ocean — glacier ice, the default</span></div>
-      <div><span style="color:#0e7490;">⏺ light</span>  <span style="color:#6e767d;">⎿ Arctic Day, for paper-white terminals</span></div>
-      <div><span style="color:#d97757;">⏺ coral</span>  <span style="color:#6e767d;">⎿ warm, low-glare accents</span></div>
-      <div><span style="color:#e5c07b;">⏺ ansi</span>   <span style="color:#6e767d;">⎿ zero hardcoded color — your 16 colors</span></div>
-      <div><span style="color:#8b8177;">⏺ mono</span>   <span style="color:#6e767d;">⎿ glyphs without color</span></div>
+      <div><span style="color:#5fd7ff;">◆ dark</span>   <span style="color:#94a3ad;">↳ Deep Ocean — glacier ice, the default</span></div>
+      <div><span style="color:#0e7490;">◆ light</span>  <span style="color:#6e767d;">↳ Arctic Day, for paper-white terminals</span></div>
+      <div><span style="color:#d97757;">◆ coral</span>  <span style="color:#6e767d;">↳ warm, low-glare accents</span></div>
+      <div><span style="color:#e5c07b;">◆ ansi</span>   <span style="color:#6e767d;">↳ zero hardcoded color — your 16 colors</span></div>
+      <div><span style="color:#8b8177;">◆ mono</span>   <span style="color:#6e767d;">↳ glyphs without color</span></div>
     </div>""")
 
     syntax_card = card("Syntax highlighting — stdlib regex, ~120 lines", f"""
@@ -160,10 +160,10 @@ def build() -> str:
 
     todo_card = card("Compact todos, strike-through on done", f"""
     <div style="{mono};color:#e9dfd2;">
-      <div><span style="font-weight:700;">⏺ Update Todos</span></div>
-      <div>  <span style="color:#94a3ad;">⎿</span> <span style="color:#98c379;">☒</span> <span style="color:#8b8177;text-decoration:line-through;">Read calc.py and find the bug</span></div>
-      <div>  <span style="color:#94a3ad;">⎿</span> <span style="color:#5fd7ff;font-weight:700;">◐</span> <span style="font-weight:700;">Add a zero-division guard</span></div>
-      <div>  <span style="color:#94a3ad;">⎿</span> <span style="color:#8b8177;">☐</span> Run the tests</div>
+      <div><span style="font-weight:700;">◆ Update Todos</span></div>
+      <div>  <span style="color:#94a3ad;">↳</span> <span style="color:#98c379;">☒</span> <span style="color:#8b8177;text-decoration:line-through;">Read calc.py and find the bug</span></div>
+      <div>  <span style="color:#94a3ad;">↳</span> <span style="color:#5fd7ff;font-weight:700;">◐</span> <span style="font-weight:700;">Add a zero-division guard</span></div>
+      <div>  <span style="color:#94a3ad;">↳</span> <span style="color:#8b8177;">☐</span> Run the tests</div>
     </div>""")
 
     dialog_card = card("Diff-review permission dialogs", f"""
@@ -207,7 +207,7 @@ def build() -> str:
 
   <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:30px;justify-content:center;">
     <span style="font:600 12px/1 ui-monospace,monospace;color:#98c379;border:1px solid #2f3d2f;border-radius:99px;padding:8px 14px;">zero dependencies</span>
-    <span style="font:600 12px/1 ui-monospace,monospace;color:#56b6c2;border:1px solid #2b3a3d;border-radius:99px;padding:8px 14px;">158 tests green</span>
+    <span style="font:600 12px/1 ui-monospace,monospace;color:#56b6c2;border:1px solid #2b3a3d;border-radius:99px;padding:8px 14px;">168 tests green</span>
     <span style="font:600 12px/1 ui-monospace,monospace;color:#d97757;border:1px solid #4a3328;border-radius:99px;padding:8px 14px;">31 providers incl. Gemini, Grok, Kimi</span>
     <span style="font:600 12px/1 ui-monospace,monospace;color:#c678dd;border:1px solid #3d2f45;border-radius:99px;padding:8px 14px;">prompt caching + hit-rate</span>
     <span style="font:600 12px/1 ui-monospace,monospace;color:#e5c07b;border:1px solid #453a2b;border-radius:99px;padding:8px 14px;">hard $ cost cap</span>

@@ -194,6 +194,91 @@ class BaseProvider:
         raise NotImplementedError
 
 
+class _ThinkSplitter:
+    """Routes inline markup in streamed content to the right lane.
+
+    Some OpenAI-compatible providers (MiniMax, GLM, Qwen, DeepSeek-V style)
+    return the model's chain-of-thought inside the content itself instead of
+    a dedicated ``reasoning_content`` field, and occasionally leak native
+    tool-protocol tags (``<minimax:tool_call>``) into plain text. This state
+    machine splits the stream across chunk boundaries:
+
+    - ``<think>...</think>``      -> ("reasoning", ...) — shown live, never stored
+    - ``<minimax:tool_call>...``  -> dropped (protocol artifact, not user text)
+    - everything else             -> ("text", ...) — stored in the message
+
+    Orphan closing tags are removed silently.
+    """
+
+    OPEN_THINK = "<think>"
+    CLOSE_THINK = "</think>"
+    OPEN_MM = "<minimax:tool_call>"
+    CLOSE_MM = "</minimax:tool_call>"
+
+    def __init__(self) -> None:
+        self.mode = "text"          # "text" | "think" | "drop"
+        self.buf = ""
+
+    def _candidates(self) -> List[str]:
+        if self.mode == "think":
+            return [self.CLOSE_THINK]
+        if self.mode == "drop":
+            return [self.CLOSE_MM]
+        # text mode: openers transition; orphan closers are stripped in place
+        return [self.OPEN_THINK, self.OPEN_MM, self.CLOSE_THINK, self.CLOSE_MM]
+
+    def _emit(self, out: List[Tuple[str, str]], piece: str) -> None:
+        if not piece:
+            return
+        if self.mode == "think":
+            out.append(("reasoning", piece))
+        elif self.mode == "text":
+            out.append(("text", piece))
+        # "drop": discard silently
+
+    def feed(self, piece: str) -> List[Tuple[str, str]]:
+        self.buf += piece
+        out: List[Tuple[str, str]] = []
+        while True:
+            best_i, best_tag = -1, None
+            for tag in self._candidates():
+                i = self.buf.find(tag)
+                if i != -1 and (best_i == -1 or i < best_i):
+                    best_i, best_tag = i, tag
+            if best_tag is not None:
+                self._emit(out, self.buf[:best_i])
+                self.buf = self.buf[best_i + len(best_tag):]
+                if best_tag == self.OPEN_THINK:
+                    self.mode = "think"
+                elif best_tag == self.OPEN_MM:
+                    self.mode = "drop"
+                else:                       # any closing tag -> back to text
+                    self.mode = "text"
+                continue
+            # hold back a tail that could be the start of any candidate tag
+            # (e.g. "<thi" or "<mini" at the end of this chunk)
+            keep = 0
+            for tag in self._candidates():
+                for k in range(min(len(tag) - 1, len(self.buf)), 0, -1):
+                    if tag.startswith(self.buf[-k:]):
+                        keep = max(keep, k)
+                        break
+            if keep:
+                emit, self.buf = self.buf[:-keep], self.buf[-keep:]
+            else:
+                emit, self.buf = self.buf, ""
+            self._emit(out, emit)
+            return out
+
+    def flush(self) -> List[Tuple[str, str]]:
+        if not self.buf:
+            return []
+        out: List[Tuple[str, str]] = []
+        self._emit(out, self.buf)   # leftover routed by mode (drop = discard)
+        self.buf = ""
+        return out
+
+
 class OpenAICompatProvider(BaseProvider):
     kind = "openai"
 
@@ -237,10 +322,11 @@ class OpenAICompatProvider(BaseProvider):
                 raise
 
     def _stream_once(self, url, payload) -> Iterator[Tuple[str, Any]]:
-        text_parts: List[str] = []
+        text_parts: List[str] = []          # real text only (think stripped)
         tool_calls: Dict[int, Dict[str, Any]] = {}
         stop_reason: Optional[str] = None
         usage: Dict[str, int] = {}
+        splitter = _ThinkSplitter()
 
         for data in self.transport.post(url, self._headers(), payload):
             if data == "[DONE]":
@@ -270,8 +356,12 @@ class OpenAICompatProvider(BaseProvider):
                         yield ("reasoning", thought)
                 piece = delta.get("content")
                 if piece:
-                    text_parts.append(piece)
-                    yield ("text", piece)
+                    for kind, chunk_out in splitter.feed(piece):
+                        if kind == "reasoning":
+                            yield ("reasoning", chunk_out)
+                        else:
+                            text_parts.append(chunk_out)
+                            yield ("text", chunk_out)
                 for tc in delta.get("tool_calls") or []:
                     idx = tc.get("index", 0)
                     slot = tool_calls.setdefault(idx, {"id": None, "name": "", "args": ""})
@@ -285,6 +375,11 @@ class OpenAICompatProvider(BaseProvider):
                 if choice.get("finish_reason"):
                     stop_reason = choice["finish_reason"]
 
+        for kind, chunk_out in splitter.flush():
+            if kind == "reasoning":
+                yield ("reasoning", chunk_out)
+            else:
+                text_parts.append(chunk_out)
         content: List[Dict[str, Any]] = []
         joined = "".join(text_parts)
         if joined:

@@ -466,8 +466,8 @@ class Repl:
             for name in THEMES:
                 mark = self.ui.paint(" ← active", "green") if name == current else ""
                 self.ui.set_theme(name)   # borrow this theme's palette for the swatch
-                sample = self.ui.paint("⏺ sample text", "brand") + "  " + \
-                    self.ui.paint("⎿ result", "gray") + "  " + \
+                sample = self.ui.paint("◆ sample text", "brand") + "  " + \
+                    self.ui.paint("↳ result", "gray") + "  " + \
                     self.ui.paint("+ diff", "green")
                 self.ui.set_theme(current)  # restore
                 self.ui.p(f"  {name:<8} {sample}{mark}")

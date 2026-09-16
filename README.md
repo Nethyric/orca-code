@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/Nethyric/orca-code/actions/workflows/ci.yml"><img src="https://github.com/Nethyric/orca-code/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9%2B-38d9f0" alt="Python 3.9+"></a>
-  <img src="https://img.shields.io/badge/tests-158%20green-22c55e" alt="158 tests">
+  <img src="https://img.shields.io/badge/tests-168%20green-22c55e" alt="168 tests">
   <img src="https://img.shields.io/badge/dependencies-0-8b5cf6" alt="Zero dependencies">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
   <img src="https://img.shields.io/badge/version-0.0.1-0e4c6b" alt="v0.0.1">
@@ -29,11 +29,11 @@
 
 <pre lang="text">
 ╭─ orca ─── deep ocean ───────────────────────────────╮
-│ ⏺ read_file(orc/webapp.py)                          │
-│   ⎿ 142 lines                                       │
-│ ⏺ write_file(orc/static/app.js)                     │
-│ ⏺ bash(python3 -m http.server 8000)                 │
-│   ⎿ serving · 3 files · game complete               │
+│ ◆ read_file(orc/webapp.py)                          │
+│   ↳ 142 lines                                       │
+│ ◆ write_file(orc/static/app.js)                     │
+│ ◆ bash(python3 -m http.server 8000)                 │
+│   ↳ serving · 3 files · game complete               │
 │ ⌁ thinking · models: 31 · ctx 12.4k/200k ▮▮▮░░░░    │
 ╰─────────────────────────────────────────────────────╯
 </pre>
@@ -95,7 +95,7 @@ orca -p "add dark mode to the site" --allow-write
 - **Thinking streams** — reasoning is shown live (dim, italic) but never stored,
   so context stays clean.
 - **Local-first** — Ollama and LM Studio need no account, no key, no internet.
-- **158 offline tests** — CI matrix on Python 3.9–3.13, no network, no keys.
+- **168 offline tests** — CI matrix on Python 3.9–3.13, no network, no keys.
 
 ## Documentation
 
