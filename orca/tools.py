@@ -134,9 +134,9 @@ class ToolContext:
 
     def rel(self, path: Path) -> str:
         try:
-            return str(path.relative_to(self.root))
+            return path.relative_to(self.root).as_posix()
         except ValueError:
-            return str(path)
+            return path.as_posix()
 
 
 # --------------------------------------------------------------------------
