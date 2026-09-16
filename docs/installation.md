@@ -132,8 +132,10 @@ py -m orca --version
 **Option C — WSL:** the Deep Ocean UI is tuned for ANSI-capable terminals.
 In WSL, follow the macOS/Linux steps above.
 
-Use Windows Terminal (not legacy `cmd.exe`) for full color and box-drawing
-support. If glyphs look wrong, run `orca config` and pick the `plain` theme.
+Orca detects the console automatically: in plain `cmd.exe` it switches to a
+clean ASCII look (correct colors, no mojibake); in Windows Terminal you get
+the full Deep Ocean UI with glyphs. If anything still looks off, `orca doctor`
+reports the console capabilities and `orca config` offers the `mono` theme.
 
 ## Offline / air-gapped machines
 

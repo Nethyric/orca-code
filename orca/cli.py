@@ -11,8 +11,10 @@ from .config import (Config, ConfigError, PROVIDER_PRESETS, SUGGESTED_MODELS,
                      VERSION, config_path, model_info, orca_home)
 from .providers import ProviderError, make_provider, require_key
 from .usage import TokenBudgetExceeded
+
+WHALE = "🐋"
 from .sessions import Session, latest_session, load_session, find_session
-from .ui import UI, fmt_tokens
+from .ui import UI, fmt_tokens, glyph, safe
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -23,7 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(
         prog="orca",
-        description="🐋 Orca Code — the apex predator of terminal coding agents",
+        description=f"{glyph(WHALE)} Orca Code — the apex predator of terminal coding agents",
         parents=[common],
     )
     parser.add_argument("-p", "--print", metavar="PROMPT", dest="print_prompt",
@@ -74,6 +76,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             stream.reconfigure(encoding="utf-8", errors="replace")
         except (AttributeError, ValueError):
             pass  # non-tty/captured stream without reconfigure()
+    if os.name == "nt":
+        from .winconsole import setup as _win_setup
+        _win_setup()   # UTF-8 code page + VT processing for cmd.exe
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -342,12 +347,12 @@ def run_auth(args: argparse.Namespace) -> int:
     if cmd == "logout":
         keys = dict(cfg.get("api_keys", {}) or {})
         if args.provider not in keys:
-            print(f"no stored key for '{args.provider}'")
+            print(safe(f"no stored key for '{args.provider}'"))
             return 1
         del keys[args.provider]
         cfg.set("api_keys", keys)
         cfg.save()
-        print(f"removed stored key for '{args.provider}'")
+        print(safe(f"removed stored key for '{args.provider}'"))
         return 0
 
     if cmd in ("list", "ls"):
@@ -368,7 +373,7 @@ def run_auth(args: argparse.Namespace) -> int:
                 continue
             mark = " ← default" if name == default else ""
             rows.append(f"  {name:<14} {status}{mark}")
-        print("\n".join(rows) or "  (no keys yet — `orca auth login`)")
+        print(safe("\n".join(rows) or "  (no keys yet — `orca auth login`)"))
         return 0
 
     # -- login ------------------------------------------------------------
@@ -379,7 +384,7 @@ def run_auth(args: argparse.Namespace) -> int:
         return 2
     if not provider:
         if not sys.stdin.isatty():
-            print("non-interactive shell — use: orca auth login <provider> -t <key>")
+            print(safe("non-interactive shell — use: orca auth login <provider> -t <key>"))
             return 2
         names = [n for n in sorted(PROVIDER_PRESETS)
                  if n not in ("custom", "mock")]
@@ -393,17 +398,17 @@ def run_auth(args: argparse.Namespace) -> int:
             raw = input("\nLogin to which provider? [number] ").strip()
             provider = names[int(raw) - 1]
         except (ValueError, IndexError, EOFError, KeyboardInterrupt):
-            print("\naborted")
+            print(safe("\naborted"))
             return 1
     preset = PROVIDER_PRESETS[provider]
     if not preset.get("key_env"):
-        print(f"'{provider}' runs locally — no API key needed.")
+        print(safe(f"'{provider}' runs locally — no API key needed."))
         return 0
 
     token = args.token
     if not token:
         if not sys.stdin.isatty():
-            print("non-interactive shell — pass the key with -t/--token")
+            print(safe("non-interactive shell — pass the key with -t/--token"))
             return 2
         try:
             import getpass
@@ -412,7 +417,7 @@ def run_auth(args: argparse.Namespace) -> int:
             print("\naborted")
             return 1
     if not token:
-        print("no key given — aborted")
+        print(safe("no key given — aborted"))
         return 1
 
     # validate against the provider's live catalog
@@ -429,7 +434,7 @@ def run_auth(args: argparse.Namespace) -> int:
     except Exception as exc:
         msg = str(exc)
         if "401" in msg or "403" in msg or "invalid" in msg.lower():
-            print(f"✗ provider rejected this key: {msg}")
+            print(safe(f"✗ provider rejected this key: {msg}"))
             return 1
         verdict = f"? could not validate ({msg}) — storing anyway"
 
@@ -441,8 +446,8 @@ def run_auth(args: argparse.Namespace) -> int:
     except OSError as exc:
         print(f"could not save config: {exc}")
         return 1
-    print(verdict)
-    print(f"✓ key stored for '{provider}' in {config_path()}")
+    print(safe(verdict))
+    print(safe(f"✓ key stored for '{provider}' in {config_path()}"))
 
     # offer to make it the default with a real model id
     if not args.no_default and sys.stdin.isatty() and models:
@@ -458,16 +463,16 @@ def run_auth(args: argparse.Namespace) -> int:
                 cfg.set("provider", provider)
                 cfg.set("model", pick)
                 cfg.save()
-                print(f"✓ default: {provider} · {pick}")
+                print(safe(f"✓ default: {provider} · {pick}"))
         except (EOFError, KeyboardInterrupt):
             print()
-    print("\nNext: run `orca` in any project, or `orca -p \"...\"` for one-shot tasks.")
+    print(safe("\nNext: run `orca` in any project, or `orca -p \"...\"` for one-shot tasks."))
     return 0
 
 
 def run_wizard() -> int:
     interactive = sys.stdin.isatty()
-    print(f"🐋 Orca Code setup  (config → {config_path()})\n")
+    print(safe(f"{glyph(WHALE)} Orca Code setup  (config → {config_path()})\n"))
     names = [n for n in PROVIDER_PRESETS if n not in ("custom", "mock")]
     if not interactive:
         print("Non-interactive shell. Configure via environment variables instead:\n"
@@ -504,7 +509,7 @@ def run_wizard() -> int:
     except (EOFError, KeyboardInterrupt):
         model = default_model
     if not model:
-        print("No model given — rerun `orca config` later. Aborting.")
+        print(safe("No model given — rerun `orca config` later. Aborting."))
         return 1
 
     cfg = Config()
@@ -516,13 +521,13 @@ def run_wizard() -> int:
         cfg.set("api_keys", keys)
     cfg.save()
 
-    print(f"\nsaved → {config_path()}")
+    print(safe(f"\nsaved → {config_path()}"))
     if api_key or name in ("ollama", "lmstudio"):
-        print("testing connection…")
+        print(safe("testing connection…"))
         ok, message = _test_provider(cfg, name, model)
         print(("  " + message))
         if ok:
-            print(f"\n✓ You're set. Run `orca` in any project directory.")
+            print(safe(f"\n✓ You're set. Run `orca` in any project directory."))
         else:
             print(f"\n! Saved anyway. Test failed: {message}")
     return 0
@@ -548,12 +553,19 @@ def run_doctor(args: argparse.Namespace) -> int:
     cfg = Config(root=Path(args.root).resolve() if args.root else None)
     provider_name = args.provider or cfg.detect_provider()
     model = args.model or cfg.model or (SUGGESTED_MODELS.get(provider_name) or ["?"])[0]
-    print("🐋 Orca Code doctor\n")
+    print(f"{glyph(WHALE)} Orca Code doctor\n")
     checks: List[tuple[str, str]] = []
 
     checks.append(("python", f"{sys.version.split()[0]} "
                   f"({'ok' if sys.version_info >= (3, 9) else 'NEEDS 3.9+'})"))
     checks.append(("config file", str(config_path()) + (" ✓" if config_path().is_file() else " (missing — `orca config`)")))
+    if os.name == "nt":
+        from .winconsole import caps
+        c = caps()
+        checks.append(("console colors (VT)", "on" if c["vt"] else "off — colors auto-disabled"))
+        checks.append(("console UTF-8", "cp 65001" if c["utf8"] else "legacy code page"))
+        checks.append(("terminal", "Windows Terminal" if c["modern"] else
+                       "cmd.exe (ASCII look; Windows Terminal = full UI)"))
     checks.append(("provider", provider_name))
     conf = cfg.resolve_provider(provider_name)
     checks.append(("base url", conf["base_url"]))
@@ -564,13 +576,13 @@ def run_doctor(args: argparse.Namespace) -> int:
     if provider_name == "mock":
         checks.append(("connectivity", "mock — offline"))
     elif has_key:
-        print("running checks…\n")
+        print(safe("running checks…\n"))
         ok, message = _test_provider(cfg, provider_name, model)
         checks.append(("connectivity", ("✓ " if ok else "✗ ") + message))
     print()
     width = max(len(k) for k, _ in checks)
     for key, value in checks:
-        print(f"  {key:<{width}}  {value}")
+        print(safe(f"  {key:<{width}}  {value}"))
     print("\n  home dir:", orca_home())
     return 0
 

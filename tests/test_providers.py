@@ -368,7 +368,7 @@ class TestProviderCoverage(unittest.TestCase):
         "nebius": ("https://api.studio.nebius.ai/v1", "NEBIUS_API_KEY"),
         "nvidia": ("https://integrate.api.nvidia.com/v1", "NVIDIA_API_KEY"),
         "huggingface": ("https://router.huggingface.co/v1", "HF_TOKEN"),
-        "github": ("https://models.inference.ai.azure.com", "GITHUB_TOKEN"),
+        "github": ("https://models.github.ai/inference", "GITHUB_TOKEN"),
         "dahl": ("https://inference.dahl.global/v1", "DAHL_API_KEY"),
         "anthropic": ("https://api.anthropic.com", "ANTHROPIC_API_KEY"),
         "openai": ("https://api.openai.com/v1", "OPENAI_API_KEY"),

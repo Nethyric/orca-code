@@ -139,7 +139,7 @@ class Repl:
                 self.ui.warn("Turn interrupted.")
             except Exception as exc:  # keep the REPL alive
                 self.ui.error(f"{type(exc).__name__}: {exc}")
-        self.ui.notice("Goodbye. 🐋")
+        self.ui.notice("Goodbye. " + self.ui.sym(chr(128056)))
 
     def _multiline(self, first: str) -> str:
         """\\ at end-of-line continues; \"\"\" opens/closes a block."""

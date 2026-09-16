@@ -72,9 +72,28 @@ def _encoding_ok() -> bool:
     try:
         enc = sys.stdout.encoding or "utf-8"
         "⏺⎿•⋯❯🐋☒◐☐✢↻".encode(enc)
-        return True
     except (UnicodeEncodeError, LookupError):
         return False
+    # legacy Windows consoles (plain cmd.exe/conhost) get the ASCII set:
+    # the code page may be fixed but the font usually still mangles glyphs
+    from .winconsole import ascii_only
+    if ascii_only():
+        return False
+    return True
+
+
+def glyph(s: str) -> str:
+    """Module-level glyph with automatic ASCII fallback (for non-UI prints)."""
+    return _FALLBACK.get(s, s) if not _encoding_ok() else s
+
+
+def safe(text: str) -> str:
+    """Whole-string glyph fallback for direct print() calls (auth, doctor, wizard)."""
+    if _encoding_ok():
+        return text
+    for k, v in _FALLBACK.items():
+        text = text.replace(k, v)
+    return text
 
 
 # Fallbacks for terminals that cannot print the fancy glyphs.
@@ -86,6 +105,7 @@ _FALLBACK = {
     "☒": "[x]", "☐": "[ ]", "✢": "*", "✳": "*", "✶": "*", "✻": "*",
     "✽": "*", "↻": "R", "⏵": ">", "⏸": "||",
     "≈": "~", "≋": "~", "·": ".", "⌁": "~",
+    "…": "...", "—": "-", "→": "->", "←": "<-", "▏": "|",
 }
 
 
@@ -234,12 +254,10 @@ class UI:
         )
         self.fancy = _encoding_ok()
         if os_name() == "nt":
-            try:
-                import ctypes  # noqa: F401
-                kernel32 = ctypes.windll.kernel32
-                kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
-            except Exception:
-                pass
+            from . import winconsole
+            winconsole.setup()
+            # a console without VT processing would print raw ESC codes
+            self.color = self.color and (winconsole.caps()["vt"] or forced == "force")
         self._out = sys.stderr if stderr else sys.stdout
         self._streamed_newline = True
         self._reasoning_shown = False

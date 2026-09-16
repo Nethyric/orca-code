@@ -94,8 +94,12 @@ One key, many models — useful for trying providers before committing:
 | Nebius | `NEBIUS_API_KEY` | api.studio.nebius.ai/v1 | deepseek-ai/deepseek-v3 |
 | NVIDIA | `NVIDIA_API_KEY` | integrate.api.nvidia.com/v1 | meta/llama-4-maverick-17b |
 | Hugging Face Router | `HF_TOKEN` | router.huggingface.co/v1 | Qwen3-Coder-480B |
-| GitHub Models | `GITHUB_TOKEN` | models.inference.ai.azure.com | openai/gpt-5.1 |
+| GitHub Models | `GITHUB_TOKEN` | models.github.ai/inference | openai/gpt-4.1 |
 | OpenCode Zen | `OPENCODE_API_KEY` | opencode.ai/zen/v1 | grok-code-fast |
+
+> **Note on GitHub Models:** GitHub has announced the retirement of the
+> Models inference service; it may be unavailable or return errors during the
+> retirement window. Treat it as best-effort.
 
 ## Local runtimes
 

@@ -145,7 +145,7 @@ PROVIDER_PRESETS: Dict[str, Dict[str, Any]] = {
     },
     "github": {
         "kind": "openai",
-        "base_url": "https://models.inference.ai.azure.com",
+        "base_url": "https://models.github.ai/inference",
         "key_env": "GITHUB_TOKEN",
     },
     "opencode": {
@@ -235,7 +235,7 @@ SUGGESTED_MODELS: Dict[str, List[str]] = {
     "siliconflow": ["deepseek-ai/DeepSeek-V3.1"],
     "nvidia": ["meta/llama-4-maverick-17b-128e-instruct"],
     "huggingface": ["Qwen/Qwen3-Coder-480B-A35B-Instruct"],
-    "github": ["openai/gpt-5.1"],
+    "github": ["openai/gpt-4.1"],
     "opencode": ["grok-code-fast"],
     "dahl": [
         "MiniMaxAI/MiniMax-M2.7",
