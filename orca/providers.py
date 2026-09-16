@@ -298,12 +298,15 @@ class OpenAICompatProvider(BaseProvider):
         }
         if tools:
             payload["tools"] = openai_tools(tools)
-        if self.max_tokens:
-            # OpenAI's newer models only accept the new name.
-            if self.conf.get("name") == "openai":
-                payload["max_completion_tokens"] = self.max_tokens
-            else:
-                payload["max_tokens"] = self.max_tokens
+        # default output budget: many OpenAI-compatible providers default to
+        # a LOW cap (e.g. 4k), which silently truncates large single tool
+        # calls (whole-file writes) mid-JSON — the call arrives unusable.
+        out_cap = self.max_tokens or 32768
+        # OpenAI's newer models only accept the new name.
+        if self.conf.get("name") == "openai":
+            payload["max_completion_tokens"] = out_cap
+        else:
+            payload["max_tokens"] = out_cap
         # include_usage is OpenAI-specific; some local servers reject it.
         include_usage = self.conf.get("name") not in ("ollama", "lmstudio", "custom")
         if include_usage:

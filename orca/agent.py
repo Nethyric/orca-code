@@ -47,6 +47,10 @@ TOOL_GUIDELINES = """\
 - Run builds/tests/linters with bash after changes; iterate until green.
 - Use todo to track multi-step work and keep exactly one task in_progress.
 - Tool outputs are truncated (⋯ markers) — narrow your reads instead of asking for more.
+- Providers cap single responses (often ~4k tokens). For files larger than ~100
+  lines: write_file the first part, then APPEND with edit_file in chunks
+  (old_string = the file's last unique line, new_string = that line + the next
+  part). Never emit one giant tool call.
 """
 
 OPERATING_PRINCIPLES = """\
@@ -410,6 +414,17 @@ class Agent:
     def _execute(self, call: Dict[str, Any]) -> Dict[str, Any]:
         name = call.get("name", "")
         args = call.get("input") or {}
+        if "_raw" in args:
+            # the provider cut the JSON arguments mid-stream (output cap)
+            self.ui.tool_start(name, "(arguments truncated)")
+            self.ui.tool_done("truncated by provider output cap", is_error=True)
+            return tool_result_block(
+                call.get("id", ""),
+                "Error: your tool-call arguments were truncated by the provider's "
+                "single-response output cap. Retry in SMALLER pieces: write_file the "
+                "first ~100 lines, then use edit_file to append each next part "
+                "(old_string = a unique line at the end of the file).",
+                is_error=True)
         label, detail = describe_tool_use(name, args, self.root)
 
         decision = self.permissions.check(name, args, self.root)
