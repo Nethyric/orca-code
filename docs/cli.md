@@ -38,6 +38,7 @@ orca -p "fix the flaky test"    # one-shot, print result, exit
 | `--accept-edits` | auto-approve file edits (bash still asks) |
 | `--yolo` | skip all prompts (destructive commands still blocked) |
 | `--no-auto-compact` | disable automatic context compaction |
+| `--style <name>` | output style: `concise`, `verbose`, or `code` (also settable as `output_style`) |
 
 ## Subcommands
 
@@ -61,6 +62,7 @@ orca -p "fix the flaky test"    # one-shot, print result, exit
 | `/provider <name>` | switch provider |
 | `/context` | context-window meter (tokens used / limit) |
 | `/compact` | compact the conversation now |
+| `/export [file]` | export the transcript as Markdown (default `orca-session-<date>.md`) |
 | `/cost` | session cost breakdown per provider |
 | `/undo` | rewind files **and** conversation to the last checkpoint |
 | `/rewind` | pick any earlier checkpoint to rewind to |
@@ -93,6 +95,7 @@ The tools the model can call, and what they can do:
 | `todo` | multi-step task tracking shown in the UI |
 | `web_search` | DuckDuckGo search, no API key needed |
 | `web_fetch` | fetch a URL as readable text (HTML stripped) |
+| `task` | spawn a subagent for a scoped sub-job — `explore` (read-only research) or `general` (everything except spawning more subagents); its report comes back as the tool result |
 
 Tool availability adapts: in plan mode, mutating tools are disabled; permission
 levels are visible in `/tools`.

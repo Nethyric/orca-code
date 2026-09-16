@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 APP = "orca-code"
 
 
@@ -335,6 +335,9 @@ DEFAULTS: Dict[str, Any] = {
     "max_cost_usd": None,        # hard session cost cap (safety stop)
     "prompt_caching": True,      # Anthropic cache_control on system+tools
     "permissions": {"mode": "default", "allow": [], "deny": []},
+    "hooks": {},                  # e.g. {"after_edit": "black %file", "before_bash": "make lint %command"}
+    "output_style": None,         # "concise" | "verbose" | "code" | None
+    "max_task_turns": 12,         # turn budget per subagent (task tool)
     "api_keys": {},
     "base_urls": {},
 }

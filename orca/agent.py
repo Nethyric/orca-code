@@ -53,6 +53,16 @@ TOOL_GUIDELINES = """\
   part). Never emit one giant tool call.
 """
 
+OUTPUT_STYLES = {
+    "concise": "Style: concise. Keep replies tight — at most ~10 lines, lead with "
+               "the answer or code, no preamble, no restating the question.",
+    "verbose": "Style: verbose. Explain your reasoning, trade-offs and alternatives "
+               "in detail; include relevant context for every decision.",
+    "code":    "Style: code. Reply with code and terminal commands; prose only when "
+               "strictly necessary or explicitly requested.",
+}
+
+
 OPERATING_PRINCIPLES = """\
 # Operating principles
 - You are proactive and finish the job: explore, implement, verify. Do not stop halfway
@@ -93,7 +103,11 @@ class Agent:
                  permissions: Optional[Permissions] = None,
                  session: Optional[Session] = None,
                  root: Optional[Path] = None,
-                 auto_approve_callback: Optional[Callable[[str, Dict[str, Any]], str]] = None):
+                 auto_approve_callback: Optional[Callable[[str, Dict[str, Any]], str]] = None,
+                 max_turns: Optional[int] = None,
+                 allowed_tools: Optional[set] = None,
+                 provider_factory: Optional[Callable[[], BaseProvider]] = None,
+                 task_depth: int = 0):
         self.provider = provider
         self.cfg = cfg
         self.ui = ui
@@ -118,6 +132,11 @@ class Agent:
         self._fallback_queue = self._build_fallbacks(cfg.get("fallbacks"))
         self._fast_provider: Optional[BaseProvider] = None
         self._max_session_tokens = cfg.get("max_session_tokens")
+        # subagent machinery
+        self.max_turns = max_turns or MAX_TURNS
+        self.allowed_tools = allowed_tools      # None = full toolset
+        self._provider_factory = provider_factory
+        self.task_depth = task_depth
 
     # ------------------------------------------------------------------ prompt
 
@@ -135,6 +154,8 @@ class Agent:
             TOOL_GUIDELINES,
             BUILD_GUIDELINE,
             CONTEXT_NOTICE,
+            *( [OUTPUT_STYLES[self.cfg.get("output_style")]]
+               if self.cfg.get("output_style") in OUTPUT_STYLES else [] ),
             SAFETY,
         ]
         self._system_cache = "\n\n".join(p for p in parts if p)
@@ -212,10 +233,17 @@ class Agent:
         report = self.context_report()
         self.ui.turn_footer(report["used"], report["window"], self.usage.cost_text())
 
-    def _loop(self) -> None:
+    def _tool_specs(self):
+        """Tool schemas for THIS agent (subagents see a restricted set)."""
         specs = toolmod.tool_specs()
+        if self.allowed_tools is None:
+            return specs
+        return [s for s in specs if s["name"] in self.allowed_tools]
+
+    def _loop(self) -> None:
+        specs = self._tool_specs()
         tools_json = json.dumps(specs)
-        for _turn in range(MAX_TURNS):
+        for _turn in range(self.max_turns):
             self.usage.guard()
             system = self.system_prompt()
             assistant_msg = self._stream_assistant(system, specs)
@@ -256,7 +284,7 @@ class Agent:
                 self.messages = compacted
                 self.session.append({"t": "compaction"})
         else:
-            self.ui.warn(f"Turn limit ({MAX_TURNS}) reached — stopping for a check-in.")
+            self.ui.warn(f"Turn limit ({self.max_turns}) reached — stopping for a check-in.")
 
     # ------------------------------------------------------------------ streaming
 
@@ -411,6 +439,67 @@ class Agent:
 
     # ------------------------------------------------------------------ tools
 
+    def _run_hook(self, key: str, variables: Dict[str, str]) -> tuple:
+        """Run a configured lifecycle hook command. Returns (ok, output)."""
+        command = (self.cfg.get("hooks") or {}).get(key) or ""
+        for name_, value in variables.items():
+            command = command.replace(f"%{name_}", (value or "").replace(chr(34), ""))
+        try:
+            proc = subprocess.run(command, shell=True, cwd=str(self.root),
+                                  capture_output=True, text=True, timeout=30)
+            out = (proc.stdout + proc.stderr).strip()[:2000]
+            return proc.returncode == 0, out
+        except Exception as exc:
+            return False, f"hook crashed: {exc}"
+
+    def _run_task(self, call: Dict[str, Any], args: Dict[str, Any]) -> Dict[str, Any]:
+        """The task tool: a scoped subagent with a fresh context.
+
+        Depth is capped at 1 (subagents cannot spawn subagents) and the
+        subagent shares the parent's usage tracker, so cost caps and token
+        budgets still bind. 'explore' profile = read-only toolset.
+        """
+        prompt = (args.get("prompt") or "").strip()
+        profile = args.get("profile") or "explore"
+        if not prompt:
+            return tool_result_block(call.get("id", ""),
+                                     "Error: task requires 'prompt'", is_error=True)
+        if self.task_depth >= 1:
+            return tool_result_block(
+                call.get("id", ""),
+                "Error: subagents cannot spawn further subagents. Do the work "
+                "yourself with the tools you have.", is_error=True)
+        if profile not in ("explore", "general"):
+            profile = "explore"
+        allowed = (toolmod.EXPLORE_TOOLS if profile == "explore"
+                   else {t for t in toolmod.ALL_TOOL_NAMES if t != "task"})
+        self.ui.tool_start("task", f"{profile}: {prompt[:60]}")
+        try:
+            if self._provider_factory is not None:
+                provider = self._provider_factory()
+            else:
+                provider = make_provider(
+                    self.cfg, self.cfg.detect_provider(), self.provider.model)
+        except Exception as exc:
+            self.ui.tool_done(f"could not start subagent: {exc}", is_error=True)
+            return tool_result_block(call.get("id", ""),
+                                     f"Error: could not start subagent: {exc}",
+                                     is_error=True)
+        sub = Agent(provider, self.cfg, self.ui, permissions=self.permissions,
+                    root=self.root, allowed_tools=allowed,
+                    max_turns=int(self.cfg.get("max_task_turns") or 12),
+                    task_depth=self.task_depth + 1)
+        sub.usage = self.usage   # shared budget: caps still bind
+        try:
+            sub.run(prompt)
+        except (ProviderError, CostLimitExceeded, TokenBudgetExceeded) as exc:
+            self.ui.tool_done(f"subagent failed: {exc}", is_error=True)
+            return tool_result_block(call.get("id", ""),
+                                     f"Error: subagent failed: {exc}", is_error=True)
+        report = sub.last_text() or "(subagent returned no text)"
+        self.ui.tool_done(f"subagent done · {len(report)} chars")
+        return tool_result_block(call.get("id", ""), report)
+
     def _execute(self, call: Dict[str, Any]) -> Dict[str, Any]:
         name = call.get("name", "")
         args = call.get("input") or {}
@@ -425,6 +514,22 @@ class Agent:
                 "first ~100 lines, then use edit_file to append each next part "
                 "(old_string = a unique line at the end of the file).",
                 is_error=True)
+        if name == "task":
+            return self._run_task(call, args)
+
+        # before_bash hook may veto a command entirely
+        if name == "bash" and (self.cfg.get("hooks") or {}).get("before_bash"):
+            ok, out = self._run_hook("before_bash",
+                                     {"command": str(args.get("command", ""))})
+            if not ok:
+                _label, detail = describe_tool_use(name, args, self.root)
+                self.ui.tool_start(name, detail)
+                self.ui.tool_done(f"blocked by before_bash hook: {out}", is_error=True)
+                return tool_result_block(
+                    call.get("id", ""),
+                    f"Error: blocked by before_bash hook: {out or 'vetoed'}",
+                    is_error=True)
+
         label, detail = describe_tool_use(name, args, self.root)
 
         decision = self.permissions.check(name, args, self.root)
@@ -450,6 +555,18 @@ class Agent:
             output, is_error = f"Error: {exc}", True
         except Exception as exc:  # defensive: never crash the loop on a tool bug
             output, is_error = f"Error: tool crashed: {exc!r}", True
+
+        # lifecycle hooks: after_edit (edit_file/write_file), after_bash (bash)
+        if not is_error:
+            hook_key = {"edit_file": "after_edit", "write_file": "after_edit",
+                        "bash": "after_bash"}.get(name)
+            if hook_key and (self.cfg.get("hooks") or {}).get(hook_key):
+                ok, hook_out = self._run_hook(
+                    hook_key, {"file": str(args.get("path", "")),
+                               "command": str(args.get("command", ""))})
+                tag = "hook" if ok else "hook FAILED"
+                output = f"{output}\n[{tag}] {hook_out}" if hook_out else (
+                    f"{output}\n[hook ok]" if ok else f"{output}\n[hook FAILED]")
 
         # loop detection: the exact same call 3+ times in a row means stuck
         signature = (name, json.dumps(args, sort_keys=True, default=str)[:500])
@@ -537,8 +654,19 @@ class Agent:
                 chunks.append(payload)
         return "".join(chunks)
 
+    def last_text(self) -> str:
+        """Final assistant text of the conversation (empty if none)."""
+        for msg in reversed(self.messages):
+            if msg.get("role") != "assistant":
+                continue
+            parts = [b.get("text", "") for b in msg.get("content", [])
+                     if b.get("type") == "text"]
+            if parts:
+                return "\n".join(parts)
+        return ""
+
     def context_report(self) -> Dict[str, Any]:
-        specs_json = json.dumps(toolmod.tool_specs())
+        specs_json = json.dumps(self._tool_specs())
         system = self.system_prompt()
         return {
             "used": self.context.used(system, self.messages, specs_json),

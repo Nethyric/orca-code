@@ -742,6 +742,22 @@ TOOLS: List[Dict[str, Any]] = [
         "fn": tool_web_search,
     },
     {
+        "name": "task",
+        "perm": "task",
+        "description": "Spawn a subagent with a fresh context for one scoped, "
+                       "self-contained sub-task (explore unfamiliar code, research an "
+                       "approach, gather evidence) and return its final report. Keeps "
+                       "the main conversation clean. The subagent cannot spawn further "
+                       "subagents.",
+        "input_schema": _schema({
+            "prompt": {"type": "string",
+                       "description": "Complete, self-contained instructions for the subagent"},
+            "profile": {"type": "string", "enum": ["explore", "general"],
+                        "description": "explore (default): read-only tools; general: full tool access"},
+        }, ["prompt"]),
+        "fn": None,   # executed by the Agent loop (needs agent state)
+    },
+    {
         "name": "web_fetch",
         "perm": "web",
         "description": "Fetch a web page by URL and return readable text (HTML is stripped). "
@@ -754,6 +770,9 @@ TOOLS: List[Dict[str, Any]] = [
 ]
 
 TOOL_BY_NAME: Dict[str, Dict[str, Any]] = {t["name"]: t for t in TOOLS}
+ALL_TOOL_NAMES = {t["name"] for t in TOOLS}
+# read-only toolset for explore-profile subagents
+EXPLORE_TOOLS = {"read_file", "grep", "glob", "ls", "web_search", "web_fetch"}
 
 
 def tool_specs() -> List[Dict[str, Any]]:
@@ -766,6 +785,8 @@ def run_tool(name: str, args: Dict[str, Any], ctx: ToolContext) -> str:
     tool = TOOL_BY_NAME.get(name)
     if tool is None:
         raise ToolError(f"Unknown tool '{name}'. Available: {', '.join(TOOL_BY_NAME)}")
+    if tool.get("fn") is None:
+        raise ToolError(f"'{name}' is executed by the agent loop, not run_tool")
     if not isinstance(args, dict):
         raise ToolError(f"Invalid arguments for {name}: expected an object, "
                         f"got {type(args).__name__}")

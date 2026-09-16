@@ -43,6 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="fallback to try when the provider fails "
                              "(repeatable, tried in order)")
     parser.add_argument("--plan", action="store_true", help="start in plan (read-only) mode")
+    parser.add_argument("--style", choices=["concise", "verbose", "code"],
+                        help="output style (also settable in config as output_style)")
     parser.add_argument("--accept-edits", action="store_true", help="auto-approve file edits")
     parser.add_argument("--yolo", action="store_true",
                         help="skip all permission prompts (catastrophic commands still blocked)")
@@ -128,6 +130,8 @@ def run_session(args: argparse.Namespace) -> int:
         cfg.set("api_keys", keys)
     if args.max_cost is not None:
         cfg.set("max_cost_usd", args.max_cost)
+    if getattr(args, "style", None):
+        cfg.set("output_style", args.style)
     if getattr(args, "max_tokens_budget", None):
         cfg.set("max_session_tokens", args.max_tokens_budget)
     if getattr(args, "fallback", None):

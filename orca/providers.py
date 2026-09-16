@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import random
 import time
 import urllib.error
 import urllib.request
@@ -22,6 +23,16 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 from .config import Config
 
 RETRYABLE_STATUS = {408, 409, 425, 429, 500, 502, 503, 504, 529}
+# gateways sometimes report a transient failure with an unexpected status
+# (e.g. 400 "failed to read body: ... i/o timeout") — the body tells the truth
+_TRANSIENT_BODY = ("i/o timeout", "timed out", "timeout", "temporarily",
+                   "try again", "overloaded", "connection reset")
+
+def _looks_transient(status: int, detail: str) -> bool:
+    if status in RETRYABLE_STATUS:
+        return True
+    d = (detail or "").lower()
+    return any(t in d for t in _TRANSIENT_BODY)
 
 
 class ProviderError(Exception):
@@ -57,13 +68,14 @@ class Transport:
                 resp = urllib.request.urlopen(req, timeout=timeout)
             except urllib.error.HTTPError as exc:
                 detail = self._error_detail(exc)
-                if exc.code in RETRYABLE_STATUS and attempt <= 3:
-                    time.sleep(min(2 ** attempt, 8))
+                if _looks_transient(exc.code, detail) and attempt <= 3:
+                    # capped exponential backoff + jitter (avoids retry storms)
+                    time.sleep(min(2 ** attempt, 8) + random.uniform(0, 0.6))
                     continue
                 raise ProviderError(f"HTTP {exc.code}: {detail}") from exc
             except (urllib.error.URLError, OSError, TimeoutError) as exc:
                 if attempt <= 3:
-                    time.sleep(min(2 ** attempt, 8))
+                    time.sleep(min(2 ** attempt, 8) + random.uniform(0, 0.6))
                     continue
                 raise ProviderError(f"Cannot reach {url}: {exc}") from exc
             try:
@@ -86,7 +98,10 @@ class Transport:
     def _error_detail(exc: urllib.error.HTTPError) -> str:
         try:
             raw = exc.read().decode("utf-8", "replace")
-            data = json.loads(raw)
+            try:
+                data = json.loads(raw)
+            except ValueError:
+                return raw[:400]
             err = data.get("error", data)
             if isinstance(err, dict):
                 return str(err.get("message") or raw)

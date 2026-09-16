@@ -35,6 +35,7 @@ COMMANDS = {
     "/init": "create an ORCA.md template here",
     "/sessions": "list saved sessions",
     "/save [name]": "name this session",
+    "/export [file]": "export this conversation to markdown",
     "/clear": "clear the conversation",
     "/exit": "quit (also Ctrl+D)",
 }
@@ -252,6 +253,13 @@ class Repl:
                 self.ui.ok(f"Session file: {self.agent.session.path}")
             else:
                 self.ui.notice("Session will save on your next message.")
+        elif cmd == "/export":
+            from datetime import datetime
+            from .sessions import export_markdown
+            default = f"orca-session-{datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+            target = Path(rest) if rest else Path.cwd() / default
+            export_markdown(self.agent.messages, target)
+            self.ui.ok(f"exported → {target}")
         elif cmd == "/clear":
             self.agent.messages = []
             self.agent.checkpoints = []

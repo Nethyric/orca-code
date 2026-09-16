@@ -53,6 +53,31 @@ class Session:
         self.append({"t": "msg", "role": message["role"], "content": message["content"]})
 
 
+def export_markdown(messages: List[Dict[str, Any]], path: Path) -> Path:
+    """Write a conversation to a readable markdown transcript."""
+    lines = ["# Orca Code session", ""]
+    for msg in messages:
+        role = msg.get("role", "?")
+        for block in msg.get("content", []):
+            btype = block.get("type")
+            if btype == "text":
+                who = "## 🐋 Orca" if role == "assistant" else "## 🧑 You"
+                lines += [who, "", block.get("text", "").rstrip(), ""]
+            elif btype == "tool_use":
+                args = json.dumps(block.get("input", {}), ensure_ascii=False)
+                if len(args) > 200:
+                    args = args[:200] + "…"
+                lines.append(f"`◆ {block.get('name', '?')}({args})`")
+            elif btype == "tool_result":
+                content = block.get("content", "")
+                if isinstance(content, list):
+                    content = " ".join(str(c) for c in content)
+                content = str(content).strip().split("\n")[0][:160]
+                lines.append(f"  `↳ {content}`")
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
 def load_session(path: Path) -> List[Dict[str, Any]]:
     """Replay a session file into messages.
 

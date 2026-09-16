@@ -40,6 +40,14 @@ Orca reads it at startup. Run `orca doctor` to sanity-check the result.
 
   "max_session_tokens": null,        // hard token budget per session (runaway guard)
   "max_cost_usd": null,              // hard cost cap in USD — mid-run safety stop
+  "output_style": null,               // "concise" | "verbose" | "code" (or null)
+  "max_task_turns": 12,               // turn cap for subagents spawned via the task tool
+  "hooks": {                          // shell hooks; %file / %command are substituted
+    "after_edit": null,               //   runs after write_file/edit_file
+    "after_bash": null,               //   runs after bash
+    "before_bash": null               //   non-zero exit BLOCKS the command
+  },
+
   "max_tokens": null,                // per-response token limit (provider default)
 
   "auto_compact": true,              // compact context near the window limit
@@ -140,3 +148,29 @@ happened. Disable with `--no-auto-compact` or `"auto_compact": false`.
 `orca init` creates an `ORCA.md` at the project root — conventions, commands,
 gotchas — which is injected into every session in that project. Fully
 provider-neutral. `/memory` shows what's loaded.
+
+## Hooks
+
+Three optional shell hooks (30s timeout each, run in the project root):
+
+| Hook | When | Effect |
+| --- | --- | --- |
+| `before_bash` | before every `bash` tool call | non-zero exit **blocks** the command; output tells the model why |
+| `after_edit` | after every `write_file` / `edit_file` | output is appended to the tool result |
+| `after_bash` | after every `bash` tool call | output is appended to the tool result |
+
+`%file` and `%command` are substituted before the hook runs:
+
+```json
+"hooks": {
+  "after_edit":  "uv run ruff format %file",
+  "before_bash": "./scripts/guard.sh %command"
+}
+```
+
+## Output styles
+
+`output_style` (or `--style`) biases how the model writes replies:
+`concise` (short, no filler), `verbose` (explains its reasoning), or
+`code` (code-first, minimal prose). It is a system-prompt nudge, not a
+post-filter — nothing is hidden from you.
