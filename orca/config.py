@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 APP = "orca-code"
 
 

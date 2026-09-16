@@ -12,10 +12,10 @@
 <p align="center">
   <a href="https://github.com/Nethyric/orca-code/actions/workflows/ci.yml"><img src="https://github.com/Nethyric/orca-code/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9%2B-38d9f0" alt="Python 3.9+"></a>
-  <img src="https://img.shields.io/badge/tests-182%20green-22c55e" alt="182 tests">
+  <img src="https://img.shields.io/badge/tests-185%20green-22c55e" alt="185 tests">
   <img src="https://img.shields.io/badge/dependencies-0-8b5cf6" alt="Zero dependencies">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
-  <img src="https://img.shields.io/badge/version-0.0.1-0e4c6b" alt="v0.0.1">
+  <img src="https://img.shields.io/badge/version-0.0.3-0e4c6b" alt="v0.0.3">
 </p>
 
 <p align="center">
@@ -55,8 +55,13 @@ curl -fsSL https://raw.githubusercontent.com/Nethyric/orca-code/main/install.sh 
 irm https://raw.githubusercontent.com/Nethyric/orca-code/main/install.ps1 | iex
 ```
 
-No git required — both installers pull the repo zip directly. Alternative
-methods (pip, pipx, venv, offline, from source):
+No git required — both installers pull the repo zip directly.
+
+**No Python at all?** Each [release](https://github.com/Nethyric/orca-code/releases)
+ships standalone executables for Linux, macOS, and Windows (x64 + ARM64),
+plus `orca.pyz` (one file, runs anywhere Python 3.9+ is installed).
+
+Alternative methods (pip, pipx, venv, offline, from source):
 
 ```bash
 pip install https://github.com/Nethyric/orca-code/archive/refs/heads/main.zip

@@ -4,6 +4,7 @@ Orca Code is a single Python package with **zero runtime dependencies**. If you
 have Python 3.9 or newer, you already have everything you need.
 
 - [Requirements](#requirements)
+- [Prebuilt binaries (no Python needed)](#prebuilt-binaries-no-python-needed)
 - [One-liner (macOS / Linux / Windows)](#one-liner-macos--linux--windows)
 - [pip](#pip)
 - [pipx (recommended for CLI tools)](#pipx-recommended-for-cli-tools)
@@ -24,6 +25,48 @@ have Python 3.9 or newer, you already have everything you need.
 | OS | macOS, Linux, Windows (WSL recommended, native works) |
 | Dependencies | **None** — pure standard library |
 | API key | Only for cloud providers. Ollama / LM Studio need nothing. |
+
+## Prebuilt binaries (no Python needed)
+
+Every release ships standalone executables — a full copy of the Python
+runtime and Orca in one file. Download from the
+[releases page](https://github.com/Nethyric/orca-code/releases/latest):
+
+| Asset | Platform |
+| --- | --- |
+| `orca-linux-x64.tar.gz` | Linux x86-64 |
+| `orca-linux-arm64.tar.gz` | Linux ARM64 |
+| `orca-macos-x64.tar.gz` | macOS Intel |
+| `orca-macos-arm64.tar.gz` | macOS Apple Silicon |
+| `orca-windows-x64.exe` | Windows x86-64 (direct download, no unzip) |
+| `orca-windows-arm64.exe` | Windows ARM64 |
+| `orca.pyz` | any OS **with** Python 3.9+ — one file, zero install |
+
+Linux / macOS:
+
+```bash
+curl -fsSL https://github.com/Nethyric/orca-code/releases/latest/download/orca-linux-x64.tar.gz | tar -xz
+sudo mv orca /usr/local/bin/     # or: chmod +x orca && sudo mv orca /usr/local/bin/
+orca --version
+```
+
+(adjust the filename for your platform — on Apple Silicon use
+`orca-macos-arm64.tar.gz`)
+
+macOS quarantines unsigned binaries; clear it once:
+
+```bash
+xattr -d com.apple.quarantine /usr/local/bin/orca
+```
+
+Windows: download `orca-windows-x64.exe` and run it from a terminal
+(`orca-windows-x64.exe --version`). SmartScreen may warn on first run —
+"More info" → "Run anyway", or verify the SHA-256 against `sha256sums.txt`
+on the release page.
+
+Every binary is built and smoke-tested by CI (`--version`, `--help`,
+`auth list`) before the release is published, and all assets are
+checksummed in `sha256sums.txt`.
 
 ## One-liner (macOS / Linux / Windows)
 
