@@ -87,6 +87,9 @@ orca -p "add dark mode to the site" --allow-write
   OpenAI-compatible endpoint via `custom`. Keys are validated against the
   provider's live model list before they're saved.
 - **Zero dependencies** — pure Python 3.9+ stdlib. Nothing to break on upgrade.
+- **Battle-tested** — [Orca: Deep Runner](https://github.com/Nethyric/orca-deep-runner),
+  a complete HTML5 game (18 files, ~2,600 lines, 90 tests), was built by Orca
+  in one continuous agent session.
 - **Live cost ceiling** — every response shows spend so far; `max_cost_usd` stops
   the agent mid-run, not after the invoice.
 - **Real rewind** — `/undo` restores files *and* conversation state.
