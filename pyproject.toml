@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orca-code"
+version = "0.0.1"
+description = "🐋 Orca Code — the apex predator of terminal coding agents. Zero-dependency, provider-agnostic alternative to Claude Code."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Orca Code contributors" }]
+keywords = ["ai", "agent", "cli", "coding", "llm", "claude", "copilot", "terminal"]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Code Generators",
+]
+
+[project.urls]
+Homepage = "https://github.com/Nethyric/orca-code"
+Repository = "https://github.com/Nethyric/orca-code"
+Issues = "https://github.com/Nethyric/orca-code/issues"
+Changelog = "https://github.com/Nethyric/orca-code/releases"
+
+[project.scripts]
+orca = "orca.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["orca*"]
