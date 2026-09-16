@@ -39,7 +39,7 @@ Say ("using: " + (& $exe @rest --version 2>$null))
 
 # -- 2. install from the repo zip (no git required) ----------------------
 Say "installing Orca Code..."
-& $exe @rest -m pip install --quiet $Zip
+& $exe @rest -m pip install --quiet --upgrade --force-reinstall $Zip
 if ($LASTEXITCODE -ne 0) {
     Err "pip install failed. Try manually: $exe -m pip install $Zip"
     exit 1

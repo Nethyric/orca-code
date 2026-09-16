@@ -24,14 +24,17 @@ fi
 say "using $PY ($($PY --version 2>&1))"
 
 # ── 2. pick an install strategy for this platform ────────────────────────
-if command -v pipx >/dev/null 2>&1; then
+if command -v pipx >/dev/null 2>&1 && ! command -v orca >/dev/null 2>&1; then
   say "installing with pipx (isolated)"
   pipx install "$ZIP"
-elif ! $PY -m pip install "$ZIP" 2>/dev/null; then
-  # externally-managed environment (PEP 668): Ubuntu 23.04+/Debian 12+/Fedora 38+
-  say "system Python is externally managed — installing to --user"
-  $PY -m pip install --user "$ZIP" 2>/dev/null || \
-    $PY -m pip install --break-system-packages "$ZIP"
+else
+  # --upgrade --force-reinstall: the script must also refresh existing installs
+  if ! $PY -m pip install --upgrade --force-reinstall "$ZIP" 2>/dev/null; then
+    # externally-managed environment (PEP 668): Ubuntu 23.04+/Debian 12+/Fedora 38+
+    say "system Python is externally managed — installing to --user"
+    $PY -m pip install --user --upgrade --force-reinstall "$ZIP" 2>/dev/null || \
+      $PY -m pip install --break-system-packages --upgrade --force-reinstall "$ZIP"
+  fi
 fi
 
 # ── 3. make sure it's on PATH ────────────────────────────────────────────
