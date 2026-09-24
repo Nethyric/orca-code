@@ -1,0 +1,5 @@
+/orca
+/orca.exe
+dist/
+*.test
+.orca/settings.local.json
